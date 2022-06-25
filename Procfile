@@ -1,2 +1,2 @@
-web: python apyrbot.py
-worker: python apyrbot.py
+web: python bot.py
+worker: python bot.py
