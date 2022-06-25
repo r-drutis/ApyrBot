@@ -5,3 +5,4 @@
 /.idea/discordbot.iml
 /test/webscraper_test.py
 /.env
+/chromedriver.exe
