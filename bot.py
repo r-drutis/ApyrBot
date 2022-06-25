@@ -3,12 +3,16 @@ import lightbulb
 import miru
 from bot_view import TestButton, JournalNavButton
 from miru.ext import nav
+import os
+from dotenv import load_dotenv
 
-
+load_dotenv()
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+ENABLED_GUILD = int(os.getenv('ENABLED_GUILD'))
 
 bot = lightbulb.BotApp(
-    token='OTQyNTc0OTQyNjk0ODE3ODYy.YgmfUg.s06VGMvPGoQkjQM_B_gJdw5ddrE',
-    default_enabled_guilds=(942572518903009341)
+    token=DISCORD_TOKEN,
+    default_enabled_guilds=ENABLED_GUILD
 )
 
 miru.load(bot)
