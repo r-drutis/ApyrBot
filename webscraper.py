@@ -17,11 +17,12 @@ CAMPAIGN_R20 = os.getenv('CAMPAIGN_R20')
 
 def intialize_webdriver():
     options = Options()
+    options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
     options.add_argument('--headless')
     options.add_argument('--disable-gpu')
     options.add_argument('--start-maximized')
     options.add_argument('--window-size=1920,1080')
-    driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=options)
+    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options)
     return driver
 
 def login_to_roll20():
