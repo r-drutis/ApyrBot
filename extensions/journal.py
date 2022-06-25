@@ -2,7 +2,7 @@ import hikari
 import lightbulb
 from webscraper import retrieve_query_from_journal
 from lightbulb.utils.pag import StringPaginator
-from bot_view import FrogNavButton
+from extensions.journal_view import FrogNavButton
 from miru.ext import nav
 
 fun_plugin = lightbulb.Plugin("Fun")
