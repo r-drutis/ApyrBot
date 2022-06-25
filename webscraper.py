@@ -36,6 +36,7 @@ def login_to_roll20():
     usernameElements.send_keys(USERNAME_R20)
     passwordElements.send_keys(PASSWORD_R20)
     driver.find_element(By.ID, 'login').click()
+    print("login clicked")
     wait.until(EC.visibility_of_element_located((By.XPATH, '/html/body/div[4]/div/div[1]/div[4]/div[2]/a[1]')))
 
 def navigate_to_external_journal_page():
