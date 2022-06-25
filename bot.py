@@ -15,19 +15,16 @@ bot = lightbulb.BotApp(
 )
 miru.load(bot)
 
-"""
-Base bot functions
-"""
-
 @bot.listen(hikari.StartedEvent)
 async def on_started(event):
     print('Bot has started!')
 
+# Ping command to check if the bot is running
 @bot.command
 @lightbulb.command('ping', 'Says ribbit!')
 @lightbulb.implements(lightbulb.SlashCommand)
 async def ping(ctx: lightbulb.Context):
-    message = await ctx.respond('Ribbit!')
+    await ctx.respond('Ribbit!')
 
 # Load journal related commands and functions into bot
 bot.load_extensions_from("./extensions/")

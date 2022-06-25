@@ -8,19 +8,22 @@ from journal_exceptions import UnknownEntryTypeError
 import os
 from dotenv import load_dotenv
 
+# Load roll20 environment variables
 load_dotenv()
 USERNAME_R20 = os.getenv('USERNAME_R20')
 PASSWORD_R20 = os.getenv('PASSWORD_R20')
 CAMPAIGN_R20 = os.getenv('CAMPAIGN_R20')
 
+# This function initializes the chromedriver instance used to scrape information from roll20
+# Returns headless chromedriver instance
 def intialize_webdriver():
+    # The chromedriver runs in headless mode so that it is compatible with the heroku server.
     options = Options()
     options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-gpu')
-    #options.add_argument('--start-maximized')
     options.add_argument('--window-size=1920,1080')
     driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options)
     return driver
@@ -34,16 +37,20 @@ def login_to_roll20():
     usernameElements.send_keys(USERNAME_R20)
     passwordElements.send_keys(PASSWORD_R20)
     driver.find_element(By.ID, 'login').click()
-    print("login clicked")
+    # Verify the user successfully logged in by checking if the landing page has been reached
     wait.until(EC.visibility_of_element_located((By.XPATH, '/html/body/div[4]/div/div[1]/div[4]/div[2]/a[1]')))
 
 def navigate_to_external_journal_page():
     driver.get(CAMPAIGN_R20)
 
+# This function find the unique url of the queried entry from the external journal page
+# Returns journal entry page url which will be scraped
+
 def find_entry_url(query):
     journal_entry_url = ""
     if query:
         try:
+            # Web Element text is compared in lower case so that search terms are case insensitive
             WebDriverWait(driver, 3, poll_frequency=1).until(EC.presence_of_element_located((By.XPATH, "//*[translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='"+query.lower()+"']")))
             query = driver.find_element(By.XPATH, "//*[translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='"+query.lower()+"']")
             journal_entry_url = query.find_element(By.XPATH, '..').get_attribute('href')
@@ -52,8 +59,12 @@ def find_entry_url(query):
             return journal_entry_url
     return journal_entry_url
 
+# This function navigates to the queried journal entry page and scrapes all info from that page
+# Returns json object containing scraped journal title, image, and text
+
 def retrieve_journal_entry(query_link):
     journal_content = {}
+    # Navigate to journal entry page and scrape info
     driver.get(query_link)
     try:
         entry = scrape_local_journal()
@@ -74,6 +85,12 @@ def scrape_local_journal():
         return entry
     return entry
 
+# This function returns the journal entry type, which can be either a Character or Handout
+# Roll20 uses a different div label depending on the entry type, which can cause problems when scraping
+# entry: Web element containing the journal entry
+# Returns the entry Web element class which specifies either Character or Handout type
+# Raises: Selenium element_exception when the element containing Entry type cannot be found
+
 def get_entry_type(entry):
     entry_type = ""
     try:
@@ -85,8 +102,6 @@ def get_entry_type(entry):
         raise element_exception
     return entry_type
 
-
-
 def scrape_entry_title(entry):
     entry_title = ""
     try:
@@ -95,6 +110,10 @@ def scrape_entry_title(entry):
     except (NoSuchElementException, TimeoutException):
          return entry_title
     return entry_title
+
+# This function scrapes all text from a journal entry
+# entry: Web element containing the journal entry
+# Returns a list containing the text segments found in the journal entry
 
 def scrape_journal_text(entry):
     journal_segments = []
