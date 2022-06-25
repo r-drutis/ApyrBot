@@ -1,4 +1,3 @@
-from selenium.webdriver.common.by import By
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -7,11 +6,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-
-import time
-
 from exceptions import UnknownEntryTypeError
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+USERNAME_R20 = os.getenv('USERNAME_R20')
+PASSWORD_R20 = os.getenv('PASSWORD_R20')
+CAMPAIGN_R20 = os.getenv('CAMPAIGN_R20')
 
 def intialize_webdriver():
     options = Options()
@@ -28,13 +30,13 @@ def login_to_roll20():
     usernameElements = driver.find_element(By.ID,'email')
     passwordElements = driver.find_element(By.ID, 'password')
 
-    usernameElements.send_keys('bot.apyr@gmail.com')
-    passwordElements.send_keys('M0lybde#')
+    usernameElements.send_keys(USERNAME_R20)
+    passwordElements.send_keys(PASSWORD_R20)
     driver.find_element(By.ID, 'login').click()
     wait.until(EC.visibility_of_element_located((By.XPATH, '/html/body/div[4]/div/div[1]/div[4]/div[2]/a[1]')))
 
 def navigate_to_external_journal_page():
-    driver.get("https://app.roll20.net/campaigns/journal/10573722/index")
+    driver.get(CAMPAIGN_R20)
 
 def find_entry_url(query):
     journal_entry_url = ""
