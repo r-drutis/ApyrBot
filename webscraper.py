@@ -21,7 +21,7 @@ def intialize_webdriver():
     # The chromedriver runs in headless mode so that it is compatible with the heroku server.
     options = Options()
     options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    #options.add_argument('--headless')
+    options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-gpu')
