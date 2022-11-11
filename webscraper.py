@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from journal_exceptions import UnknownEntryTypeError
 import os
+import undetected_chromedriver as uc
 from dotenv import load_dotenv
 
 # Load roll20 environment variables
@@ -20,12 +21,12 @@ def intialize_webdriver():
     # The chromedriver runs in headless mode so that it is compatible with the heroku server.
     options = Options()
     options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-    options.add_argument('--headless')
+    #options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-gpu')
     options.add_argument('--window-size=1920,1080')
-    driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options)
+    driver = uc.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options, use_subprocess=True)
     return driver
 
 def login_to_roll20():
@@ -46,18 +47,18 @@ def navigate_to_external_journal_page():
 # This function find the unique url of the queried entry from the external journal page
 # Returns journal entry page url which will be scraped
 
-def find_entry_url(query):
-    journal_entry_url = ""
+def find_entry_element(query):
+    journal_element = ""
     if query:
         try:
             # Web Element text is compared in lower case so that search terms are case insensitive
             WebDriverWait(driver, 3, poll_frequency=1).until(EC.presence_of_element_located((By.XPATH, "//*[translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='"+query.lower()+"']")))
             query = driver.find_element(By.XPATH, "//*[translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='"+query.lower()+"']")
-            journal_entry_url = query.find_element(By.XPATH, '..').get_attribute('href')
-            return journal_entry_url
+            journal_element = query.find_element(By.XPATH, '..')
+            return journal_element
         except (NoSuchElementException, TimeoutException):
-            return journal_entry_url
-    return journal_entry_url
+            return journal_element
+    return journal_element
 
 # This function navigates to the queried journal entry page and scrapes all info from that page
 # Returns json object containing scraped journal title, image, and text
@@ -65,7 +66,8 @@ def find_entry_url(query):
 def retrieve_journal_entry(query_link):
     journal_content = {}
     # Navigate to journal entry page and scrape info
-    driver.get(query_link)
+    query_link.click()
+
     try:
         entry = scrape_local_journal()
         journal_content["title"] = scrape_entry_title(entry)
@@ -78,7 +80,7 @@ def retrieve_journal_entry(query_link):
 def scrape_local_journal():
     entry = ""
     try:
-        wait.until(EC.visibility_of_element_located((By.XPATH, "//*[@id ='openpages']")))
+        wait.until(EC.presence_of_element_located((By.XPATH, "//*[@class ='thisbio'] | //*[@class ='thisnotes']")))
         entry = driver.find_element(By.XPATH, "//*[@id ='openpages']")
         return entry
     except (NoSuchElementException, TimeoutException):
@@ -152,12 +154,14 @@ def scrape_avatar_img(entry):
 def retrieve_query_from_journal(query):
     journal_content = {}
     navigate_to_external_journal_page()
-    entry_url = find_entry_url(query)
-    if entry_url:
-        journal_content = retrieve_journal_entry(entry_url)
+    entry_element = find_entry_element(query)
+    if entry_element:
+        journal_content = retrieve_journal_entry(entry_element)
+        navigate_to_external_journal_page()
         return journal_content
     else:
         print("nothing was found")
+        navigate_to_external_journal_page()
         return journal_content
 
 driver = intialize_webdriver()
